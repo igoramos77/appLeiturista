@@ -2,7 +2,11 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Modal, ActionSheetIOS, Alert } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
 
+import * as Permissions from 'expo-permissions';
 import * as MediaLibrary from 'expo-media-library';
+import * as Location from 'expo-location';
+import * as FileSystem from 'expo-file-system';
+
 
 import { useAuth } from '../../hooks/auth';
 
@@ -27,7 +31,7 @@ export interface IPhotoCameraProps {
   width: number;
 }
 
-import { Container, Header, TitleHeader, Title, Form, FormControl, Fields, CloseModalButton, ImageCertificate } from './styles';
+import { Container, Header, TitleHeader, Title, Form, FormControl, Fields, CloseModalButton, ImageCertificate, Label, LabelName } from './styles';
 
 const Register: React.FC = () => {
   const { user } = useAuth();
@@ -49,10 +53,36 @@ const Register: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [currentCertificateObj, setCurrentCertificateObj] = useState<any>();
 
+  const [fileName, setFileName] = useState('');
+
   const [category, setCategory] = useState({
     value: '',
     display: 'Categoria'
   });
+
+  const [location, setLocation] = useState<any>(null);
+  const [errorMsg, setErrorMsg] = useState<any>(null);
+
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        setErrorMsg('Permission to access location was denied');
+        return;
+      }
+
+      let location = await Location.getCurrentPositionAsync({});
+      setLocation(location);
+      console.log('LOCATION!!!!:::::::', location)
+    })();
+  }, []);
+
+  let text = 'Waiting..';
+  if (errorMsg) {
+    text = errorMsg;
+  } else if (location) {
+    text = JSON.stringify(location);
+  }
 
   function handleOpenSelectCategoryModal(){
     setCategoryModalOpen(true);
@@ -94,21 +124,55 @@ const Register: React.FC = () => {
   }, []);
 
 
-  const handleValidateForm = useCallback(() => {
+  const handleValidateForm = useCallback(async () => {
     setLoading(true);
-    setTimeout(() => {
+    setTimeout(async() => {
       if(matricula === '' || codigo === "" || category.value === "") {
         Alert.alert('Por favor, preencha todos os campos! 😢');
         setLoading(false);
-        return;
       } else {
-        handleSubmitForm();
-        handleClearForm();
+        const ext = currentCertificateObj.uri.split('.')[1];
+        setFileName(`${codigo}_${matricula}_${category.value.trim().replaceAll(' ', '_')}_${location.coords.latitude}._${location.coords.longitude}.${ext}`);
+
+        const perm = await Permissions.askAsync(Permissions.MEDIA_LIBRARY);
+        if (perm.status != 'granted') {
+          return;
+        } ;
+        
+        // 1. Check if "photos" directory exists, if not, create it
+        const USER_PHOTO_DIR = FileSystem.documentDirectory + 'photos';
+        const folderInfo = await FileSystem.getInfoAsync(USER_PHOTO_DIR);
+          if (!folderInfo.exists) {
+            await FileSystem.makeDirectoryAsync(USER_PHOTO_DIR);
+          }
+
+        // 2. Rename the image and define its new uri
+        const imageName = `${Date.now()}.jpg`;
+        const NEW_PHOTO_URI = `${USER_PHOTO_DIR}/${imageName}`;
+
+        // 3. Copy image to new location
+        await FileSystem.copyAsync({
+          from: currentCertificateObj.uri,
+          to: NEW_PHOTO_URI
+        })
+        .then(() => {
+          console.log(`File ${currentCertificateObj.uri} was saved as ${NEW_PHOTO_URI}`)
+        })
+        .catch(error => {console.error(error)})
+
+        MediaLibrary.saveToLibraryAsync(currentCertificateObj.uri).then(() => {
+          console.log('sucess2')
+        }).catch((e) => {
+          console.log(e);
+        })
+
+        //handleSubmitForm();
+        //handleClearForm();
         setLoading(false);
       }
     }, 200);
 
-  }, [matricula, codigo, category.value]);
+  }, [matricula, codigo, category.value, currentCertificateObj]);
 
   
   const handleSubmitForm = useCallback(async() => {
@@ -117,7 +181,7 @@ const Register: React.FC = () => {
       ...currentCertificateObj, 
       name: `${matricula}_${codigo}_${category.value}.` + ext
     } 
-    console.log(final);
+    console.log('final: ', final);
 
     // Save on device
     //MediaLibrary.saveToLibraryAsync(final)
@@ -144,6 +208,7 @@ const Register: React.FC = () => {
         <Form>
           <Fields>
             <FormControl>
+              <Label>Código</Label>
               <Input 
                 placeholder="Código" 
                 value={codigo} 
@@ -154,6 +219,7 @@ const Register: React.FC = () => {
               />
             </FormControl>
             <FormControl>
+              <Label>Matrícula</Label>
               <Input 
                 placeholder="Matrícula" 
                 value={matricula} 
@@ -162,6 +228,7 @@ const Register: React.FC = () => {
               />
             </FormControl>
             <FormControl>
+              <Label>Categoria</Label>
               <InputSelect title={category.display} onPress={handleOpenSelectCategoryModal} />
             </FormControl>
             <FormControl>
@@ -176,6 +243,7 @@ const Register: React.FC = () => {
           <FormControl>
             <Button title="Submeter leitura!" background="primary" onPress={handleValidateForm} loading={loading} />
           </FormControl>
+          <LabelName>result: {fileName}</LabelName>
         </Form>
       </KeyboardAwareScrollView>
 

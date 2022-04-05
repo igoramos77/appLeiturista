@@ -14,16 +14,34 @@ export const Title = styled.Text`
   font-size: ${RFValue(14)}px;
 `;
 
+export const Label = styled.Text`
+  font-family: ${props => props.theme.fonts.medium};
+  color: ${props => props.theme.colors.title};
+  font-size: ${RFValue(11)}px;
+  margin: 0 0 ${RFValue(8)}px ${RFValue(8)}px;
+`;
+
+export const LabelName = styled.Text`
+  font-family: ${props => props.theme.fonts.medium};
+  color: ${props => props.theme.colors.title};
+  font-size: ${RFValue(11)}px;
+  margin: ${RFValue(12)}px 0;
+  width: 100%;
+  display: flex;
+  background: red;
+  justify-content: center;
+`;
+
 export const Form = styled.View`
   flex: 1;
   height: 100%;
   padding: 0 24px;
-  margin: 24px 0;
+  margin: 8px 0;
   justify-content: space-between;
 `;
 
 export const FormControl = styled.View`
-  margin: ${RFValue(4)}px 0;
+  margin: ${RFValue(16)}px 0 0 0;
   display: flex;
   justify-content: center;
 `;

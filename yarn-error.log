@@ -1,8 +1,8 @@
 Arguments: 
-  /Users/igoramos77/.nvm/versions/node/v14.16.1/bin/node /Users/igoramos77/.nvm/versions/node/v14.16.1/bin/yarn add @types/expo-media-library
+  /Users/igoramos77/.nvm/versions/node/v14.16.1/bin/node /Users/igoramos77/.nvm/versions/node/v14.16.1/bin/yarnpkg add expo-permisions
 
 PATH: 
-  /Users/igoramos77/.nvm/versions/node/v14.16.1/bin:/Library/Frameworks/Python.framework/Versions/3.9/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/Apple/usr/bin:/Users/igoramos77/.zinit/polaris/bin:/Users/igoramos77/.nvm/versions/node/v14.16.1/bin:/Library/Frameworks/Python.framework/Versions/3.9/bin
+  /Users/igoramos77/.zinit/polaris/bin:/Users/igoramos77/.nvm/versions/node/v14.16.1/bin:/Library/Frameworks/Python.framework/Versions/3.9/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/Apple/usr/bin
 
 Yarn version: 
   1.22.10
@@ -14,7 +14,7 @@ Platform:
   darwin arm64
 
 Trace: 
-  Error: https://registry.yarnpkg.com/@types%2fexpo-media-library: Not found
+  Error: https://registry.yarnpkg.com/expo-permisions: Not found
       at Request.params.callback [as _callback] (/Users/igoramos77/.nvm/versions/node/v14.16.1/lib/node_modules/yarn/lib/cli.js:66988:18)
       at Request.self.callback (/Users/igoramos77/.nvm/versions/node/v14.16.1/lib/node_modules/yarn/lib/cli.js:140662:22)
       at Request.emit (events.js:315:20)
